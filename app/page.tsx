@@ -4,9 +4,8 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 
 type Message = { role: 'user' | 'assistant'; content: string };
 type Product = { name: string; url: string; price?: string; image?: string; category?: string };
-type Source = { title: string; url: string; type: string };
 type Contact = { email: string; whatsapp: string; whatsappUrl: string; partnersUrl: string } | null;
-type Reply = { answer: string; mode: string; products: Product[]; sources: Source[]; contact: Contact; amazonLive: boolean };
+type Reply = { answer: string; mode: string; products: Product[]; contact: Contact; amazonLive: boolean };
 
 const MASCOT = 'https://arcadeencasa.es/wp-content/uploads/2026/01/cropped-unnamed-4-Photoroom.png';
 
@@ -29,7 +28,7 @@ export default function Home() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [reply, setReply] = useState<Reply | null>(null);
-  const bottom = useRef<HTMLDivElement | null>(null);
+  const latestAssistant = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
     try {
@@ -40,8 +39,18 @@ export default function Home() {
 
   useEffect(() => {
     try { sessionStorage.setItem('aec-expert-history', JSON.stringify(messages.slice(-20))); } catch {}
-    bottom.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages, reply, loading]);
+  }, [messages]);
+
+  useEffect(() => {
+    const last = messages[messages.length - 1];
+    if (messages.length <= 1 || loading || last?.role !== 'assistant') return;
+
+    const timer = window.setTimeout(() => {
+      latestAssistant.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 80);
+
+    return () => window.clearTimeout(timer);
+  }, [messages, loading]);
 
   const canSend = useMemo(() => input.trim().length > 0 && !loading, [input, loading]);
 
@@ -95,14 +104,22 @@ export default function Home() {
         </div>
 
         <div className="aec-messages">
-          {messages.map((message, index) => (
-            <div className={`aec-row ${message.role}`} key={`${message.role}-${index}`}>
-              {message.role === 'assistant' ? (
-                <div className="aec-mascot-avatar"><img src={MASCOT} alt="" aria-hidden="true" /></div>
-              ) : <div className="aec-avatar-user">TÚ</div>}
-              <div className="aec-bubble">{message.content}</div>
-            </div>
-          ))}
+          {messages.map((message, index) => {
+            const isLatestAnswer = message.role === 'assistant' && index === messages.length - 1 && messages.length > 1;
+            return (
+              <div
+                className={`aec-row ${message.role}`}
+                key={`${message.role}-${index}`}
+                ref={isLatestAnswer ? latestAssistant : undefined}
+                style={isLatestAnswer ? { scrollMarginTop: '14px' } : undefined}
+              >
+                {message.role === 'assistant' ? (
+                  <div className="aec-mascot-avatar"><img src={MASCOT} alt="" aria-hidden="true" /></div>
+                ) : <div className="aec-avatar-user">TÚ</div>}
+                <div className="aec-bubble">{message.content}</div>
+              </div>
+            );
+          })}
 
           {messages.length === 1 && (
             <div className="aec-quick">
@@ -149,16 +166,6 @@ export default function Home() {
               </div>
             </section>
           )}
-
-          {reply?.sources?.length ? (
-            <section className="aec-section aec-sources">
-              <div className="aec-section-title">ARCHIVOS CONSULTADOS</div>
-              {reply.sources.map((source, index) => (
-                <a className="aec-source" href={source.url} target="_blank" rel="noreferrer" key={`${source.url}-${index}`}><b>{source.type}</b><span>{source.title}</span></a>
-              ))}
-            </section>
-          ) : null}
-          <div ref={bottom} />
         </div>
 
         <footer className="aec-compose-wrap">
