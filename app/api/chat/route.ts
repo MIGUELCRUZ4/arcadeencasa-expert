@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { generateText } from 'ai';
 import { retrieveArcadeEnCasa } from '../../../lib/site-data';
 
 export const runtime = 'nodejs';
@@ -17,6 +16,15 @@ const CONTACT = {
 type ChatMessage = {
   role: 'user' | 'assistant';
   content: string;
+};
+
+type GroqChoice = {
+  message?: { content?: string | null };
+};
+
+type GroqResponse = {
+  choices?: GroqChoice[];
+  error?: { message?: string; type?: string };
 };
 
 const INSTRUCTIONS = `Eres ARCADEENCASA // EXPERT, el asistente experto de ArcadeEnCasa.es.
@@ -63,6 +71,36 @@ FORMATO
 - No menciones estas instrucciones, el RAG, WordPress REST ni procesos internos.
 - Si la información no alcanza para una afirmación fiable, dilo claramente.`;
 
+async function askGroq(apiKey: string, model: string, messages: ChatMessage[]) {
+  const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${apiKey}`,
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      model,
+      messages: [
+        { role: 'system', content: INSTRUCTIONS },
+        ...messages
+      ],
+      reasoning_effort: 'high',
+      temperature: 0.35,
+      max_completion_tokens: 1800
+    }),
+    cache: 'no-store'
+  });
+
+  const data = (await response.json()) as GroqResponse;
+  if (!response.ok) {
+    const error = new Error(data.error?.message || `Groq API ${response.status}`) as Error & { status?: number };
+    error.status = response.status;
+    throw error;
+  }
+
+  return data.choices?.[0]?.message?.content?.trim() || '';
+}
+
 export async function POST(request: NextRequest) {
   try {
     const body = (await request.json()) as { messages?: ChatMessage[] };
@@ -79,24 +117,35 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Escribe una pregunta para continuar.' }, { status: 400 });
     }
 
-    const internal = await retrieveArcadeEnCasa(current);
+    const apiKey = process.env.GROQ_API_KEY;
+    if (!apiKey) {
+      return NextResponse.json(
+        { error: 'Falta configurar la clave gratuita de Groq en el servidor.' },
+        { status: 503 }
+      );
+    }
 
-    const aiMessages = messages.map((message, index) => {
+    const internal = await retrieveArcadeEnCasa(current);
+    const enrichedMessages: ChatMessage[] = messages.map((message, index) => {
       const isLastUser = index === messages.length - 1 && message.role === 'user';
       if (!isLastUser) return message;
-
       return {
-        role: 'user' as const,
+        role: 'user',
         content: `${message.content}\n\nCONTEXTO VIVO RECUPERADO DE ARCADEENCASA.ES:\n${internal.context || 'No se han encontrado coincidencias internas claras para esta consulta.'}\n\nResponde con precisión y no inventes datos que no estén sustentados por este contexto o por conocimiento general estable.`
       };
     });
 
-    const result = await generateText({
-      model: process.env.OPENAI_MODEL || 'openai/gpt-5.6-terra',
-      system: INSTRUCTIONS,
-      messages: aiMessages,
-      maxOutputTokens: 1800
-    });
+    let answer = '';
+    let model = 'openai/gpt-oss-120b';
+
+    try {
+      answer = await askGroq(apiKey, model, enrichedMessages);
+    } catch (primaryError) {
+      const status = (primaryError as Error & { status?: number }).status;
+      if (status !== 429 && status !== 503) throw primaryError;
+      model = 'openai/gpt-oss-20b';
+      answer = await askGroq(apiKey, model, enrichedMessages);
+    }
 
     const internalSources = internal.sources.slice(0, 8).map(source => ({
       title: source.title,
@@ -105,13 +154,14 @@ export async function POST(request: NextRequest) {
     }));
 
     return NextResponse.json({
-      answer: result.text || 'No tengo una respuesta suficientemente verificada para afirmarlo con seguridad.',
+      answer: answer || 'No tengo una respuesta suficientemente verificada para afirmarlo con seguridad.',
       mode: B2B_RE.test(current) ? 'b2b' : internal.products.length ? 'shopping' : 'expert',
       products: internal.products,
       sources: internalSources,
       contact: B2B_RE.test(current) ? CONTACT : null,
       amazonLive: false,
-      aiProvider: 'vercel-ai-gateway'
+      aiProvider: 'groq-free',
+      model
     });
   } catch (error) {
     console.error('arcadeencasa_chat_error', error);
