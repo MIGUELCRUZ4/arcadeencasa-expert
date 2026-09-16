@@ -60,12 +60,13 @@
     @keyframes aecPing { 0%,100% { transform:scale(1); } 50% { transform:scale(1.13); } }
     @media (max-width:680px) {
       #arcadeencasa-expert-widget { left:5px; right:auto; bottom:calc(2px + env(safe-area-inset-bottom)); }
-      #arcadeencasa-expert-widget .aec-launcher { width:168px; height:112px; }
-      #arcadeencasa-expert-widget .aec-mascot-crop { left:0; right:auto; width:105px; height:108px; }
+      #arcadeencasa-expert-widget .aec-launcher { width:232px; height:116px; overflow:visible; }
+      #arcadeencasa-expert-widget .aec-mascot-crop { left:0; right:auto; width:105px; height:108px; z-index:1; }
       #arcadeencasa-expert-widget .aec-mascot-crop img { width:101px; height:126px; }
-      #arcadeencasa-expert-widget .aec-launcher-copy { left:70px; top:22px; width:98px; padding:8px; }
-      #arcadeencasa-expert-widget .aec-launcher-copy strong { font-size:10px; }
-      #arcadeencasa-expert-widget .aec-ping { left:76px; right:auto; top:4px; }
+      #arcadeencasa-expert-widget .aec-launcher-copy { left:106px; top:22px; width:120px; padding:9px 10px 8px; text-align:center; z-index:3; }
+      #arcadeencasa-expert-widget .aec-launcher-copy strong { font-size:11px; line-height:1.05; white-space:nowrap; }
+      #arcadeencasa-expert-widget .aec-launcher-copy::after { left:-14px; right:auto; bottom:10px; width:22px; height:18px; border-right:0; border-left:3px solid #17100d; border-bottom:3px solid #17100d; transform:skewX(35deg) rotate(20deg); }
+      #arcadeencasa-expert-widget .aec-ping { left:92px; right:auto; top:3px; z-index:4; }
       #arcadeencasa-expert-widget .aec-frame-wrap { position:fixed; left:8px; right:8px; bottom:108px; width:auto; height:calc(100dvh - 126px); }
       #arcadeencasa-expert-widget iframe { border-radius:18px 18px 5px 18px; }
       #arcadeencasa-expert-widget .aec-comic-tail { right:22px; bottom:-17px; transform:rotate(42deg) skewX(-20deg); }
