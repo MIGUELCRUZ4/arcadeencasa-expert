@@ -78,5 +78,9 @@
     frameWrap.setAttribute('aria-hidden', String(!open));
     launcher.setAttribute('aria-expanded', String(open));
     launcher.setAttribute('aria-label', open ? 'Cerrar la Planta Empollona de ArcadeEnCasa' : 'Abrir la Planta Empollona de ArcadeEnCasa');
+
+    if (!open && frame.contentWindow) {
+      frame.contentWindow.postMessage({ type: 'AEC_RESET_CONVERSATION' }, origin);
+    }
   });
 })();
