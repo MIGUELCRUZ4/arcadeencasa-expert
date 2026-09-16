@@ -30,9 +30,23 @@ export default function Home() {
   const [reply, setReply] = useState<Reply | null>(null);
   const latestAssistant = useRef<HTMLDivElement | null>(null);
 
+  const reset = () => {
+    setMessages([welcome]);
+    setReply(null);
+    setError('');
+    setInput('');
+    setLoading(false);
+  };
+
   useEffect(() => {
-    // Remove the legacy stored conversation so no previous consultation can ever reappear.
     try { sessionStorage.removeItem('aec-expert-history'); } catch {}
+
+    const onMessage = (event: MessageEvent) => {
+      if (event.data?.type === 'AEC_RESET_CONVERSATION') reset();
+    };
+
+    window.addEventListener('message', onMessage);
+    return () => window.removeEventListener('message', onMessage);
   }, []);
 
   useEffect(() => {
@@ -75,13 +89,6 @@ export default function Home() {
     } finally {
       setLoading(false);
     }
-  };
-
-  const reset = () => {
-    setMessages([welcome]);
-    setReply(null);
-    setError('');
-    setInput('');
   };
 
   return (
