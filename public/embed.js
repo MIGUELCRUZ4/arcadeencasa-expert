@@ -33,7 +33,6 @@
   launcher.innerHTML = `
     <span class="aec-launcher-copy">
       <strong>¿DUDAS ARCADE?</strong>
-      <small>MODO EMPOLLÓN</small>
     </span>
     <span class="aec-mascot-crop"><img src="${mascot}" alt="" aria-hidden="true"></span>
     <span class="aec-ping">!</span>
@@ -49,10 +48,9 @@
     #arcadeencasa-expert-widget .aec-launcher { position:relative; display:flex; align-items:center; justify-content:flex-end; width:235px; height:154px; padding:0; border:0; background:transparent; cursor:pointer; pointer-events:auto; filter:drop-shadow(0 8px 12px rgba(0,0,0,.32)); }
     #arcadeencasa-expert-widget .aec-mascot-crop { position:absolute; right:0; bottom:0; width:146px; height:150px; overflow:hidden; display:block; animation:aecMascotIdle 3.2s ease-in-out infinite; transform-origin:50% 100%; }
     #arcadeencasa-expert-widget .aec-mascot-crop img { width:140px; height:175px; object-fit:contain; object-position:center bottom; display:block; }
-    #arcadeencasa-expert-widget .aec-launcher-copy { position:absolute; left:0; top:24px; width:126px; padding:10px 11px 9px; border:3px solid #17100d; border-radius:18px 18px 4px 18px; background:#fffdf1; color:#17100d; box-shadow:5px 5px 0 #b2ebf2; text-align:left; transform:rotate(-2deg); }
+    #arcadeencasa-expert-widget .aec-launcher-copy { position:absolute; left:0; top:34px; width:126px; padding:11px 11px 10px; border:3px solid #17100d; border-radius:18px 18px 4px 18px; background:#fffdf1; color:#17100d; box-shadow:5px 5px 0 #b2ebf2; text-align:left; transform:rotate(-2deg); }
     #arcadeencasa-expert-widget .aec-launcher-copy::after { content:''; position:absolute; right:-17px; bottom:8px; width:25px; height:22px; background:#fffdf1; border-right:3px solid #17100d; border-bottom:3px solid #17100d; transform:skewX(-35deg) rotate(-20deg); }
     #arcadeencasa-expert-widget .aec-launcher-copy strong { display:block; color:#4a0404; font-size:13px; line-height:1.05; }
-    #arcadeencasa-expert-widget .aec-launcher-copy small { display:block; margin-top:5px; font-size:9px; font-weight:900; letter-spacing:.7px; }
     #arcadeencasa-expert-widget .aec-ping { position:absolute; right:19px; top:4px; width:28px; height:28px; display:grid; place-items:center; border:3px solid #17100d; border-radius:50%; background:#d7ff39; color:#4a0404; font-size:17px; font-weight:900; animation:aecPing 1.7s ease-in-out infinite; }
     #arcadeencasa-expert-widget .aec-frame-wrap { position:absolute; right:102px; bottom:142px; width:min(520px,calc(100vw - 36px)); height:min(710px,calc(100vh - 175px)); opacity:0; transform:translateY(16px) scale(.97); transform-origin:100% 100%; pointer-events:none; transition:opacity .18s ease,transform .18s ease; }
     #arcadeencasa-expert-widget.aec-open .aec-frame-wrap { opacity:1; transform:translateY(0) scale(1); pointer-events:auto; }
@@ -65,9 +63,8 @@
       #arcadeencasa-expert-widget .aec-launcher { width:150px; height:112px; }
       #arcadeencasa-expert-widget .aec-mascot-crop { width:105px; height:108px; }
       #arcadeencasa-expert-widget .aec-mascot-crop img { width:101px; height:126px; }
-      #arcadeencasa-expert-widget .aec-launcher-copy { left:-42px; top:12px; width:98px; padding:8px; }
+      #arcadeencasa-expert-widget .aec-launcher-copy { left:-42px; top:22px; width:98px; padding:8px; }
       #arcadeencasa-expert-widget .aec-launcher-copy strong { font-size:10px; }
-      #arcadeencasa-expert-widget .aec-launcher-copy small { font-size:7px; }
       #arcadeencasa-expert-widget .aec-frame-wrap { position:fixed; left:8px; right:8px; bottom:108px; width:auto; height:calc(100dvh - 126px); }
       #arcadeencasa-expert-widget iframe { border-radius:18px 18px 5px 18px; }
       #arcadeencasa-expert-widget .aec-comic-tail { right:22px; bottom:-17px; transform:rotate(42deg) skewX(-20deg); }
