@@ -14,14 +14,6 @@ const welcome: Message = {
   content: '¡Ey, máquina! Dispara tu duda. Recreativas, consolas, ordenadores, MAME, hardware, historia, tecnología o qué comprar sin tirar la pasta: yo mastico los datos por ti.'
 };
 
-const quick = [
-  'Tengo 150 € y juego en PC. ¿Qué arcade stick me conviene?',
-  'Quiero una consola retro oficial para enchufar y jugar',
-  '¿CRT, LCD u OLED para una recreativa en casa?',
-  'Cuéntame qué hay de mito en la historia de Space Invaders',
-  'Somos fabricantes y queremos colaborar con ArcadeEnCasa'
-];
-
 export default function Home() {
   const [messages, setMessages] = useState<Message[]>([welcome]);
   const [input, setInput] = useState('');
@@ -64,8 +56,8 @@ export default function Home() {
 
   const canSend = useMemo(() => input.trim().length > 0 && !loading, [input, loading]);
 
-  const send = async (forced?: string) => {
-    const text = (forced ?? input).trim();
+  const send = async () => {
+    const text = input.trim();
     if (!text || loading) return;
 
     const base = conversationClosed ? [welcome] : messages;
@@ -134,12 +126,6 @@ export default function Home() {
             );
           })}
 
-          {messages.length === 1 && (
-            <div className="aec-quick">
-              {quick.map(item => <button key={item} onClick={() => send(item)}>{item}</button>)}
-            </div>
-          )}
-
           {loading && (
             <div className="aec-row assistant">
               <div className="aec-mascot-avatar"><img src={MASCOT} alt="" aria-hidden="true" /></div>
@@ -186,7 +172,7 @@ export default function Home() {
             <textarea value={input} onChange={event => setInput(event.target.value)} onKeyDown={event => {
               if (event.key === 'Enter' && !event.shiftKey) { event.preventDefault(); if (canSend) send(); }
             }} rows={2} maxLength={3000} placeholder={conversationClosed ? 'Nueva consulta, máquina…' : 'Venga, máquina: dispara tu duda arcade…'} />
-            <button className="aec-send" onClick={() => send()} disabled={!canSend} aria-label="Enviar pregunta">➤</button>
+            <button className="aec-send" onClick={send} disabled={!canSend} aria-label="Enviar pregunta">➤</button>
           </div>
           <p className="aec-privacy">No metas contraseñas, tarjetas ni datos sensibles. Esto es un recreativo, no Fort Knox.</p>
         </footer>
