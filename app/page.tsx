@@ -5,7 +5,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 type Message = { role: 'user' | 'assistant'; content: string };
 type Product = { name: string; url: string; price?: string; image?: string; category?: string };
 type Contact = { email: string; whatsapp: string; whatsappUrl: string; partnersUrl: string } | null;
-type Reply = { answer: string; mode: string; products: Product[]; contact: Contact; amazonLive: boolean };
+type Reply = { answer: string; mode: string; products: Product[]; contact: Contact; amazonLive: boolean; conversationClosed?: boolean };
 
 const MASCOT = 'https://arcadeencasa.es/wp-content/uploads/2026/01/cropped-unnamed-4-Photoroom.png';
 
@@ -28,6 +28,7 @@ export default function Home() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [reply, setReply] = useState<Reply | null>(null);
+  const [conversationClosed, setConversationClosed] = useState(false);
   const latestAssistant = useRef<HTMLDivElement | null>(null);
 
   const reset = () => {
@@ -36,6 +37,7 @@ export default function Home() {
     setError('');
     setInput('');
     setLoading(false);
+    setConversationClosed(false);
   };
 
   useEffect(() => {
@@ -66,8 +68,11 @@ export default function Home() {
     const text = (forced ?? input).trim();
     if (!text || loading) return;
 
-    const next = [...messages, { role: 'user' as const, content: text }];
+    const base = conversationClosed ? [welcome] : messages;
+    const next = [...base, { role: 'user' as const, content: text }];
+
     setMessages(next);
+    setConversationClosed(false);
     setInput('');
     setLoading(true);
     setError('');
@@ -83,7 +88,8 @@ export default function Home() {
       if (!response.ok && !data?.answer) throw new Error(data?.error || 'Error desconocido');
       const result = data as Reply;
       setMessages(previous => [...previous, { role: 'assistant', content: result.answer }]);
-      setReply(result);
+      setConversationClosed(Boolean(result.conversationClosed));
+      setReply(result.conversationClosed ? null : result);
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : 'La planta se ha quedado tiesa un segundo.');
     } finally {
@@ -179,7 +185,7 @@ export default function Home() {
           <div className="aec-compose">
             <textarea value={input} onChange={event => setInput(event.target.value)} onKeyDown={event => {
               if (event.key === 'Enter' && !event.shiftKey) { event.preventDefault(); if (canSend) send(); }
-            }} rows={2} maxLength={3000} placeholder="Venga, máquina: dispara tu duda arcade…" />
+            }} rows={2} maxLength={3000} placeholder={conversationClosed ? 'Nueva consulta, máquina…' : 'Venga, máquina: dispara tu duda arcade…'} />
             <button className="aec-send" onClick={() => send()} disabled={!canSend} aria-label="Enviar pregunta">➤</button>
           </div>
           <p className="aec-privacy">No metas contraseñas, tarjetas ni datos sensibles. Esto es un recreativo, no Fort Knox.</p>
