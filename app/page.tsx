@@ -12,7 +12,7 @@ const MASCOT = 'https://arcadeencasa.es/wp-content/uploads/2026/01/cropped-unnam
 
 const welcome: Message = {
   role: 'assistant',
-  content: '¡Ey, máquina! Modo empollón arcade activado. Pregunta lo que quieras sobre recreativas, consolas, MAME, hardware, historia o qué comprar sin tirar la pasta. Yo mastico los datos por ti.'
+  content: '¡Ey, máquina! Dispara tu duda. Recreativas, consolas, ordenadores, MAME, hardware, historia, tecnología o qué comprar sin tirar la pasta: yo mastico los datos por ti.'
 };
 
 const quick = [
@@ -61,7 +61,7 @@ export default function Home() {
         body: JSON.stringify({ messages: next.slice(-10) })
       });
       const data = await response.json();
-      if (!response.ok) throw new Error(data?.error || 'Error desconocido');
+      if (!response.ok && !data?.answer) throw new Error(data?.error || 'Error desconocido');
       const result = data as Reply;
       setMessages(previous => [...previous, { role: 'assistant', content: result.answer }]);
       setReply(result);
@@ -84,7 +84,6 @@ export default function Home() {
             <strong>LA PLANTA EMPOLLONA</strong>
             <span>ARCADEENCASA // SABE DEMASIADO DE ARCADE</span>
           </div>
-          <span className="aec-level">MODO 80s</span>
           <button className="aec-reset" onClick={reset} aria-label="Reiniciar conversación">↺</button>
         </header>
 
