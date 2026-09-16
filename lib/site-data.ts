@@ -116,7 +116,7 @@ async function getFullContent(kind: 'posts' | 'pages', id: number): Promise<stri
     const item = await getJson<{ content?: { rendered?: string } }>(
       `${SITE}/wp-json/wp/v2/${kind}/${id}?_fields=content`
     );
-    return stripHtml(item.content?.rendered || '').slice(0, 9000);
+    return stripHtml(item.content?.rendered || '').slice(0, 2600);
   } catch {
     return '';
   }
@@ -153,7 +153,7 @@ export async function retrieveArcadeEnCasa(query: string): Promise<{
     }))
     .filter(result => result.score > 0)
     .sort((a, b) => b.score - a.score)
-    .slice(0, 4);
+    .slice(0, 3);
 
   const rankedPages = pages
     .map(item => ({
@@ -162,7 +162,7 @@ export async function retrieveArcadeEnCasa(query: string): Promise<{
     }))
     .filter(result => result.score > 0)
     .sort((a, b) => b.score - a.score)
-    .slice(0, 2);
+    .slice(0, 1);
 
   const rankedProducts = products
     .map(item => ({
@@ -175,10 +175,10 @@ export async function retrieveArcadeEnCasa(query: string): Promise<{
     }))
     .filter(result => result.score > 0)
     .sort((a, b) => b.score - a.score)
-    .slice(0, 5);
+    .slice(0, 4);
 
   const articleSources = await Promise.all(
-    rankedPosts.slice(0, 3).map(async ({ item }) => ({
+    rankedPosts.slice(0, 2).map(async ({ item }) => ({
       title: stripHtml(item.title?.rendered || ''),
       url: item.link,
       type: 'ArcadeEnCasa' as const,
@@ -203,21 +203,22 @@ export async function retrieveArcadeEnCasa(query: string): Promise<{
     category: item.categories?.[0]?.name
   }));
 
-  const productSources: SiteSource[] = rankedProducts.map(({ item }) => ({
+  const productSources: SiteSource[] = rankedProducts.slice(0, 3).map(({ item }) => ({
     title: stripHtml(item.name),
     url: item.permalink,
     type: 'Tienda' as const,
     content: [
       `Precio mostrado en ArcadeEnCasa: ${formatPrice(item) || 'no verificado'}.`,
       `Categorías: ${(item.categories || []).map(c => c.name).join(', ') || 'sin categoría'}.`,
-      stripHtml(item.short_description || item.description || '').slice(0, 2000)
+      stripHtml(item.short_description || item.description || '').slice(0, 700)
     ].join(' ')
   }));
 
   const sources = [...articleSources, ...pageSources, ...productSources];
   const context = sources
     .map(source => `[${source.type}] ${source.title}\nURL: ${source.url}\n${source.content}`)
-    .join('\n\n---\n\n');
+    .join('\n\n---\n\n')
+    .slice(0, 9000);
 
   return { sources, products: productCards, context };
 }
