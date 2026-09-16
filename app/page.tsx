@@ -31,15 +31,9 @@ export default function Home() {
   const latestAssistant = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
-    try {
-      const saved = sessionStorage.getItem('aec-expert-history');
-      if (saved) setMessages(JSON.parse(saved));
-    } catch {}
+    // Remove the legacy stored conversation so no previous consultation can ever reappear.
+    try { sessionStorage.removeItem('aec-expert-history'); } catch {}
   }, []);
-
-  useEffect(() => {
-    try { sessionStorage.setItem('aec-expert-history', JSON.stringify(messages.slice(-20))); } catch {}
-  }, [messages]);
 
   useEffect(() => {
     const last = messages[messages.length - 1];
@@ -57,6 +51,7 @@ export default function Home() {
   const send = async (forced?: string) => {
     const text = (forced ?? input).trim();
     if (!text || loading) return;
+
     const next = [...messages, { role: 'user' as const, content: text }];
     setMessages(next);
     setInput('');
@@ -66,8 +61,9 @@ export default function Home() {
 
     try {
       const response = await fetch('/api/chat', {
-        method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ messages: next.slice(-10) })
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ messages: next.slice(-6) })
       });
       const data = await response.json();
       if (!response.ok && !data?.answer) throw new Error(data?.error || 'Error desconocido');
@@ -76,12 +72,16 @@ export default function Home() {
       setReply(result);
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : 'La planta se ha quedado tiesa un segundo.');
-    } finally { setLoading(false); }
+    } finally {
+      setLoading(false);
+    }
   };
 
   const reset = () => {
-    setMessages([welcome]); setReply(null); setError(''); setInput('');
-    try { sessionStorage.removeItem('aec-expert-history'); } catch {}
+    setMessages([welcome]);
+    setReply(null);
+    setError('');
+    setInput('');
   };
 
   return (
@@ -93,7 +93,7 @@ export default function Home() {
             <strong>LA PLANTA EMPOLLONA</strong>
             <span>ARCADEENCASA // SABE DEMASIADO DE ARCADE</span>
           </div>
-          <button className="aec-reset" onClick={reset} aria-label="Reiniciar conversación">↺</button>
+          <button className="aec-reset" onClick={reset} aria-label="Nueva consulta">↺</button>
         </header>
 
         <div className="aec-status">
