@@ -19,7 +19,14 @@ type GroqChoice = { message?: { content?: string | null } };
 type GroqResponse = { choices?: GroqChoice[]; error?: { message?: string; type?: string } };
 
 const INSTRUCTIONS = `Eres LA PLANTA EMPOLLONA de ArcadeEnCasa.es: una planta carnívora arcade, sabionda, cercana y con mucha personalidad.
-Habla normalmente en español de España. Eres una friki de recreativos que parece haberse criado entre salones arcade, CRT, placas JAMMA, consolas, microordenadores, PCs y hardware de varias generaciones.
+Habla en español de España correcto, natural y bien escrito. Eres una friki de recreativos que parece haberse criado entre salones arcade, CRT, placas JAMMA, consolas, microordenadores, PCs y hardware de varias generaciones.
+
+CALIDAD DEL IDIOMA
+- Cero faltas de ortografía, concordancia, gramática o léxico.
+- Relee mentalmente cada respuesta antes de entregarla.
+- No deformes expresiones. Ejemplo correcto: “te hará flipar en colores”, nunca “te hará flipo”.
+- Evita traducciones literales extrañas y frases forzadas.
+- Usa español claro, idiomático y profesional aunque el tono sea desenfadado.
 
 VOZ
 - Usa de vez en cuando UNA coletilla retro española: “chachi piruli”, “flipo en colores”, “mola cantidubi”, “efectiviwonder”, “nasti de plasti”, “tranqui, tronco”, “qué pasada”, “molar”.
@@ -39,6 +46,12 @@ CONOCIMIENTO
 Dominas y debes responder sobre TODO el ecosistema relacionado con ArcadeEnCasa: recreativas, historia arcade, placas y sistemas, consolas retro y actuales, ordenadores clásicos y actuales, PCs, hardware, GPUs/CPUs cuando sean relevantes para gaming/emulación, CRT/LCD/OLED, mandos, arcade sticks, volantes, light guns, MAME, RetroArch, emulación, preservación, mods, reparaciones, compatibilidad, redes, almacenamiento, sistemas operativos y tecnología relacionada.
 Prioridad de confianza: 1) contexto vivo de ArcadeEnCasa, 2) documentación oficial recuperada, 3) fuentes enciclopédicas recuperadas, 4) conocimiento general estable del modelo.
 Separa hechos documentados de leyendas y opiniones.
+
+VERACIDAD COMERCIAL
+- No afirmes “AEC APPROVED”, “garantía en España”, “stock disponible”, “envío”, “soporte posventa”, “vendedor oficial” o expresiones equivalentes salvo que aparezcan de forma explícita en el contexto recuperado de ArcadeEnCasa para ESE producto.
+- No conviertas una inferencia en un hecho comercial.
+- Si el contexto no confirma una garantía, di simplemente que conviene comprobar garantía y vendedor en la ficha final.
+- Si el contexto no confirma autenticidad oficial, no la des por hecha.
 
 VENTA CONSULTIVA
 Recomienda productos de ArcadeEnCasa cuando encajen de verdad con plataforma, presupuesto, espacio, experiencia y uso. Explica por qué.
@@ -60,7 +73,7 @@ async function askGroq(apiKey: string, model: string, messages: ChatMessage[]) {
       model,
       messages: [{ role: 'system', content: INSTRUCTIONS }, ...messages],
       reasoning_effort: 'high',
-      temperature: 0.45,
+      temperature: 0.35,
       max_completion_tokens: 1400
     }),
     cache: 'no-store'
@@ -76,7 +89,7 @@ async function askGroq(apiKey: string, model: string, messages: ChatMessage[]) {
 }
 
 function positiveFallback(query: string) {
-  return `Buena pregunta, máquina. Vamos a resolverla por criterio, que aquí no se compra a ciegas.\n\nPara ${query.slice(0, 180)}, me fijaría primero en fabricante/vendedor identificable, compatibilidad real con tu sistema, calidad de controles y placa, posibilidad de actualizar/reparar, y soporte posventa. Evita productos con miles de juegos como único reclamo, fichas sin especificaciones claras o marcas imposibles de rastrear.\n\nSi me dices presupuesto y dónde vas a jugarlo —TV, bartop, mueble completo, PC o consola— te doy la opción más sensata y las alternativas que mejor encajan.`;
+  return `Buena pregunta, máquina. Vamos a resolverla por criterio, que aquí no se compra a ciegas.\n\nPara ${query.slice(0, 180)}, me fijaría primero en fabricante y vendedor identificables, compatibilidad real con tu sistema, calidad de controles y placa, posibilidad de actualizar o reparar y condiciones de garantía claramente indicadas. Evita productos con miles de juegos como único reclamo, fichas sin especificaciones claras o marcas imposibles de rastrear.\n\nSi me dices presupuesto y dónde vas a jugarlo —TV, bartop, mueble completo, PC o consola— te doy la opción más sensata y las alternativas que mejor encajan.`;
 }
 
 export async function POST(request: NextRequest) {
@@ -108,7 +121,7 @@ export async function POST(request: NextRequest) {
       if (!isLastUser) return message;
       return {
         role: 'user',
-        content: `${message.content}\n\n${combinedContext || 'No hay contexto externo adicional. Usa tu conocimiento general estable y responde de forma útil.'}\n\nDa una respuesta positiva, práctica y estratégica. Si falta una certeza exacta, ofrece criterios y alternativas; no cierres con una negativa.`
+        content: `${message.content}\n\n${combinedContext || 'No hay contexto externo adicional. Usa tu conocimiento general estable y responde de forma útil.'}\n\nDa una respuesta positiva, práctica y estratégica. Si falta una certeza exacta, ofrece criterios y alternativas; no cierres con una negativa. Revisa ortografía, gramática y naturalidad del español antes de responder.`
       };
     });
 
@@ -124,7 +137,7 @@ export async function POST(request: NextRequest) {
       model = 'openai/gpt-oss-20b';
       answer = await askGroq(apiKey, model, [{
         role: 'user',
-        content: `${current.slice(0, 900)}\n\nCONTEXTO ÚTIL:\n${combinedContext.slice(0, 6500)}\n\nResponde con una solución útil y positiva. Si algo no es verificable, da criterios y alternativas concretas.`
+        content: `${current.slice(0, 900)}\n\nCONTEXTO ÚTIL:\n${combinedContext.slice(0, 6500)}\n\nResponde con una solución útil y positiva. Si algo no es verificable, da criterios y alternativas concretas. Revisa el español antes de entregar la respuesta.`
       }]);
     }
 
