@@ -11,8 +11,6 @@
     "node": "22.x"
   },
   "dependencies": {
-    "@ai-sdk/gateway": "4.0.82",
-    "ai": "7.0.100",
     "lucide-react": "^0.468.0",
     "next": "15.5.21",
     "react": "19.1.1",
