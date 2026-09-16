@@ -101,6 +101,31 @@ function collectWebSources(output: unknown): ExternalSource[] {
   return [...found.values()].slice(0, 6);
 }
 
+function createAIClient() {
+  const gatewayToken = process.env.AI_GATEWAY_API_KEY || process.env.VERCEL_OIDC_TOKEN;
+  if (gatewayToken) {
+    return {
+      client: new OpenAI({
+        apiKey: gatewayToken,
+        baseURL: 'https://ai-gateway.vercel.sh/v1'
+      }),
+      model: process.env.OPENAI_MODEL || 'openai/gpt-5.6-terra',
+      provider: 'vercel-ai-gateway'
+    } as const;
+  }
+
+  const directOpenAIKey = process.env.OPENAI_API_KEY;
+  if (directOpenAIKey) {
+    return {
+      client: new OpenAI({ apiKey: directOpenAIKey }),
+      model: process.env.OPENAI_MODEL || 'gpt-5.6-terra',
+      provider: 'openai-direct'
+    } as const;
+  }
+
+  return null;
+}
+
 export async function POST(request: NextRequest) {
   try {
     const body = (await request.json()) as { messages?: ChatMessage[] };
@@ -117,16 +142,15 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Escribe una pregunta para continuar.' }, { status: 400 });
     }
 
-    const apiKey = process.env.OPENAI_API_KEY;
-    if (!apiKey) {
+    const ai = createAIClient();
+    if (!ai) {
       return NextResponse.json(
-        { error: 'El asistente todavía no tiene configurada su clave privada de IA.' },
+        { error: 'El motor de IA todavía no tiene una credencial de ejecución disponible.' },
         { status: 503 }
       );
     }
 
     const internal = await retrieveArcadeEnCasa(current);
-    const client = new OpenAI({ apiKey });
 
     const input = messages.map((message, index) => {
       const isLastUser = index === messages.length - 1 && message.role === 'user';
@@ -138,8 +162,8 @@ export async function POST(request: NextRequest) {
       };
     });
 
-    const response = await client.responses.create({
-      model: process.env.OPENAI_MODEL || 'gpt-5.6-terra',
+    const response = await ai.client.responses.create({
+      model: ai.model,
       instructions: INSTRUCTIONS,
       input,
       tools: [{ type: 'web_search' }],
@@ -160,7 +184,8 @@ export async function POST(request: NextRequest) {
       products: internal.products,
       sources: [...internalSources, ...externalSources].slice(0, 9),
       contact: B2B_RE.test(current) ? CONTACT : null,
-      amazonLive: false
+      amazonLive: false,
+      aiProvider: ai.provider
     });
   } catch (error) {
     console.error('arcadeencasa_chat_error', error);
