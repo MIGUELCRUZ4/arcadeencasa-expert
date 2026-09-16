@@ -89,6 +89,14 @@ function relevance(query: string, title: string, body: string): number {
   return score;
 }
 
+function hasUsableImage(product: WooProduct): boolean {
+  const src = product.images?.[0]?.src?.trim();
+  if (!src) return false;
+  if (!/^https?:\/\//i.test(src)) return false;
+  if (/placeholder|woocommerce-placeholder|no-image|sin-imagen/i.test(src)) return false;
+  return true;
+}
+
 async function getJson<T>(url: string): Promise<T> {
   const response = await fetch(url, {
     headers: { Accept: 'application/json' },
@@ -175,7 +183,7 @@ export async function retrieveArcadeEnCasa(query: string): Promise<{
     }))
     .filter(result => result.score > 0)
     .sort((a, b) => b.score - a.score)
-    .slice(0, 4);
+    .slice(0, 6);
 
   const articleSources = await Promise.all(
     rankedPosts.slice(0, 2).map(async ({ item }) => ({
@@ -195,7 +203,11 @@ export async function retrieveArcadeEnCasa(query: string): Promise<{
     }))
   );
 
-  const productCards: ProductCard[] = rankedProducts.slice(0, 3).map(({ item }) => ({
+  const recommendableProducts = rankedProducts
+    .filter(({ item }) => hasUsableImage(item))
+    .slice(0, 3);
+
+  const productCards: ProductCard[] = recommendableProducts.map(({ item }) => ({
     name: stripHtml(item.name),
     url: item.permalink,
     price: formatPrice(item),
