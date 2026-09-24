@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 
 type Message = { role: 'user' | 'assistant'; content: string };
-type Product = { name: string; url: string; price?: string; image?: string; category?: string };
+type Product = { name: string; url: string; image?: string; category?: string };
 type Contact = { email: string; whatsapp: string; whatsappUrl: string; partnersUrl: string } | null;
 type Reply = { answer: string; mode: string; products: Product[]; contact: Contact; amazonLive: boolean; conversationClosed?: boolean };
 
@@ -145,7 +145,6 @@ export default function Home() {
                     <div className="aec-product-body">
                       <span className="aec-product-meta">{product.category || 'TIENDA ARCADE'}</span>
                       <strong>{product.name}</strong>
-                      {product.price && <span className="aec-price">{product.price}</span>}
                       <a href={product.url} target="_blank" rel="noreferrer">VER FICHA →</a>
                     </div>
                   </article>
