@@ -8,7 +8,6 @@ export type SiteSource = {
 export type ProductCard = {
   name: string;
   url: string;
-  price?: string;
   image?: string;
   category?: string;
 };
@@ -130,23 +129,6 @@ async function getFullContent(kind: 'posts' | 'pages', id: number): Promise<stri
   }
 }
 
-function formatPrice(product: WooProduct): string | undefined {
-  const raw = product.prices?.price;
-  if (!raw) return undefined;
-  const minor = product.prices?.currency_minor_unit ?? 2;
-  const amount = Number(raw) / Math.pow(10, minor);
-  if (!Number.isFinite(amount)) return undefined;
-
-  try {
-    return new Intl.NumberFormat('es-ES', {
-      style: 'currency',
-      currency: product.prices?.currency_code || 'EUR'
-    }).format(amount);
-  } catch {
-    return `${amount.toFixed(2)} EUR`;
-  }
-}
-
 export async function retrieveArcadeEnCasa(query: string): Promise<{
   sources: SiteSource[];
   products: ProductCard[];
@@ -210,7 +192,6 @@ export async function retrieveArcadeEnCasa(query: string): Promise<{
   const productCards: ProductCard[] = recommendableProducts.map(({ item }) => ({
     name: stripHtml(item.name),
     url: item.permalink,
-    price: formatPrice(item),
     image: item.images?.[0]?.src,
     category: item.categories?.[0]?.name
   }));
@@ -220,7 +201,6 @@ export async function retrieveArcadeEnCasa(query: string): Promise<{
     url: item.permalink,
     type: 'Tienda' as const,
     content: [
-      `Precio mostrado en ArcadeEnCasa: ${formatPrice(item) || 'no verificado'}.`,
       `Categorías: ${(item.categories || []).map(c => c.name).join(', ') || 'sin categoría'}.`,
       stripHtml(item.short_description || item.description || '').slice(0, 700)
     ].join(' ')
