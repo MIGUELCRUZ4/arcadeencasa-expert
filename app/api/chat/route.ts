@@ -71,6 +71,7 @@ VENTA CONSULTIVA
 Recomienda productos de ArcadeEnCasa solo cuando encajen de verdad con la consulta, plataforma, presupuesto, espacio y uso. No muestres productos por rutina.
 Si el usuario pide evitar clones, falsificaciones o hardware dudoso, céntrate en señales verificables de autenticidad y calidad.
 Amazon: no tienes acceso oficial en vivo a precio/stock de Amazon; nunca afirmes que lo has comprobado en tiempo real.
+- REGLA GLOBAL DE PRECIOS: no muestres, cites, estimes ni repitas precios de productos dentro del chat. Si el usuario pregunta por el precio, indícale que pulse VER FICHA para comprobar el precio actual. Las tarjetas de producto solo deben identificar el producto y abrir su ficha.
 
 B2B
 Si detectas fabricante, distribuidor o partner, baja el tono bromista y pasa a profesional-cercano. Orienta a reunión usando arcadeencasa.miguelcruz@gmail.com y WhatsApp +34 675 907 941, GrowthPartner360. No prometas acuerdos cerrados.
@@ -191,7 +192,7 @@ export async function POST(request: NextRequest) {
       if (!isLastUser) return message;
       return {
         role: 'user',
-        content: `${message.content}\n\n${combinedContext || 'No hay contexto externo adicional. Usa conocimiento general estable.'}\n\nResponde SOLO a la intención del último mensaje y usa el historial únicamente cuando sea relevante. Sé breve, concreto y coherente. Normalmente 60-140 palabras. No metas productos si no ayudan directamente. Revisa el español antes de responder.`
+        content: `${message.content}\n\n${combinedContext || 'No hay contexto externo adicional. Usa conocimiento general estable.'}\n\nResponde SOLO a la intención del último mensaje y usa el historial únicamente cuando sea relevante. Sé breve, concreto y coherente. Normalmente 60-140 palabras. No metas productos si no ayudan directamente. Revisa el español antes de responder. No muestres precios de productos: remite siempre a VER FICHA para consultar el precio actual.`
       };
     });
 
