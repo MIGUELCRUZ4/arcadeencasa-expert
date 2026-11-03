@@ -5,7 +5,7 @@
   const current = document.currentScript;
   if (!current || !current.src) return;
   const origin = new URL(current.src).origin;
-  const mascot = 'https://arcadeencasa.es/wp-content/uploads/2026/01/cropped-unnamed-4-Photoroom.png';
+  const mascot = 'https://arcadeencasa.es/wp-content/uploads/2026/11/mascota-ayuda-optimizada-140x175-1.png';
 
   const host = document.createElement('div');
   host.id = 'arcadeencasa-expert-widget';
