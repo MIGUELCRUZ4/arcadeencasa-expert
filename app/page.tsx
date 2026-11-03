@@ -7,7 +7,7 @@ type Product = { name: string; url: string; image?: string; category?: string };
 type Contact = { email: string; whatsapp: string; whatsappUrl: string; partnersUrl: string } | null;
 type Reply = { answer: string; mode: string; products: Product[]; contact: Contact; amazonLive: boolean; conversationClosed?: boolean };
 
-const MASCOT = 'https://arcadeencasa.es/wp-content/uploads/2026/01/cropped-unnamed-4-Photoroom.png';
+const MASCOT = 'https://arcadeencasa.es/wp-content/uploads/2026/11/mascota-ayuda-optimizada-140x175-1.png';
 
 const welcome: Message = {
   role: 'assistant',
